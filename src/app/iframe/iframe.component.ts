@@ -1,10 +1,12 @@
 import {
   Component,
+  EventEmitter,
   Input,
   NgZone,
   OnChanges,
   OnDestroy,
   OnInit,
+  Output,
   SimpleChanges
 } from "@angular/core";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
@@ -19,36 +21,42 @@ import * as postRobot from "post-robot";
 export class IframeComponent implements OnInit, OnDestroy, OnChanges {
   @Input() url: string;
 
-  private safeUrl: SafeResourceUrl;
+  safeUrl: SafeResourceUrl;
   public showIframe: boolean = false;
+  @Output() titleChange = new EventEmitter<string>();
 
-  constructor(private sanitizer: DomSanitizer, private ngZone: NgZone) {
-    /*this.ngZone.run(async () => {
-      console.log("Zone");
-      this.postRobot = await import("post-robot");
-    });*/
-  }
+  constructor(private sanitizer: DomSanitizer, private ngZone: NgZone) {}
 
   ngOnInit(): void {
     console.log("Init");
-    // TODO check if is correct
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log("Change");
+    console.log("Chang2e");
     if (changes.url) {
       this.showIframe = false;
-      this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
+      this.safeUrl = this.url ? this.sanitizer.bypassSecurityTrustResourceUrl(this.url) : null;
       this.connectToEuresys();
     }
   }
 
   connectToEuresys() {
     console.log("Angular: Listen");
+    (postRobot as any).setup();
     (postRobot as any).once("euresys_connect", event => {
-      this.sendToEuresys = event.data.send;
+      console.log("Angular: Connection done", event.data);
+
+      this.ngZone.run(() => {
+        this.sendToEuresys = event.data.send;
+        this.titleChange.emit(event.data.title);
+      });
+
       return {
-        send: this.receiveFromEuresys
+        send: (type: string, data: any) => {
+          this.ngZone.run(() => {
+            this.receiveFromEuresys(type, data);
+          });
+        }
       };
     });
   }
@@ -56,9 +64,15 @@ export class IframeComponent implements OnInit, OnDestroy, OnChanges {
   private sendToEuresys: (type: string, data: any) => void;
 
   private receiveFromEuresys = (type: string, data: any) => {
-    console.log("Angular: Received", type);
-    if (type == "hello") {
-      alert(data);
+    console.log("Angular: Received", type, data);
+    switch (type) {
+      case "hello":
+        alert(data);
+        break;
+      case "resize":
+        this.width = data.width;
+        this.height = data.height;
+        break;
     }
   };
 
@@ -66,7 +80,9 @@ export class IframeComponent implements OnInit, OnDestroy, OnChanges {
     this.sendToEuresys("hello", "Ciao");
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    (postRobot as any).destroy();
+  }
 
   loaeded() {
     this.showIframe = true;
@@ -74,5 +90,5 @@ export class IframeComponent implements OnInit, OnDestroy, OnChanges {
 
   guid: string;
   width = 300;
-  height = 0;
+  height = 50px;
 }

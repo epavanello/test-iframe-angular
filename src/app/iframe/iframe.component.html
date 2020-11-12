@@ -1,1 +1,1 @@
-<iframe [src]="url" [frameBorder]="0"></iframe>
+<iframe *ngIf="safeUrl" [src]="safeUrl" [style.height.px]="height"></iframe>

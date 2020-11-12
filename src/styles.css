@@ -4,16 +4,18 @@ body {
   position: relative;
   display: block;
   margin: 0;
+  background: #ccc;
   padding: 0;
+}
+body {
+  padding: 50px;
+  box-sizing: border-box;
 }
 
 .container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  background: #ccc;
 }
 
 iframe {

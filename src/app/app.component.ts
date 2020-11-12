@@ -9,4 +9,9 @@ import { Subject } from "rxjs";
 })
 export class AppComponent {
   name = "Angular " + VERSION.major;
+  toggle = true;
+
+  changeToggle() {
+    this.toggle = !this.toggle;
+  }
 }
