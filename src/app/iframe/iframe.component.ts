@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   EventEmitter,
   Input,
@@ -18,24 +19,22 @@ import * as postRobot from "post-robot";
   templateUrl: "./iframe.component.html",
   styleUrls: ["./iframe.component.css"]
 })
-export class IframeComponent implements OnInit, OnDestroy, OnChanges {
+export class IframeComponent implements OnDestroy, OnChanges {
   @Input() url: string;
 
   safeUrl: SafeResourceUrl;
-  public showIframe: boolean = false;
+  showIframe: boolean = false;
   @Output() titleChange = new EventEmitter<string>();
 
   constructor(private sanitizer: DomSanitizer, private ngZone: NgZone) {}
 
-  ngOnInit(): void {
-    console.log("Init");
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
-    console.log("Chang2e");
+    console.log("Change");
     if (changes.url) {
       this.showIframe = false;
-      this.safeUrl = this.url ? this.sanitizer.bypassSecurityTrustResourceUrl(this.url) : null;
+      this.safeUrl = this.url
+        ? this.sanitizer.bypassSecurityTrustResourceUrl(this.url)
+        : null;
       this.connectToEuresys();
     }
   }
@@ -48,7 +47,7 @@ export class IframeComponent implements OnInit, OnDestroy, OnChanges {
 
       this.ngZone.run(() => {
         this.sendToEuresys = event.data.send;
-        this.titleChange.emit(event.data.title);
+        this.setTitle(event.data.title);
       });
 
       return {
@@ -61,8 +60,13 @@ export class IframeComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
+  private setTitle(title: string) {
+    this.titleChange.emit(title);
+  }
+
   private sendToEuresys: (type: string, data: any) => void;
 
+  // (OK) Under ngZone
   private receiveFromEuresys = (type: string, data: any) => {
     console.log("Angular: Received", type, data);
     switch (type) {
@@ -73,14 +77,16 @@ export class IframeComponent implements OnInit, OnDestroy, OnChanges {
         this.width = data.width;
         this.height = data.height;
         break;
+      case "new_window":
+        // Fake response
+        this.setTitle(data.title);
+        data.onClose(true, { "is-set": true });
+        break;
     }
   };
 
-  saluta() {
-    this.sendToEuresys("hello", "Ciao");
-  }
-
   ngOnDestroy(): void {
+    console.log("Destroy");
     (postRobot as any).destroy();
   }
 
@@ -90,5 +96,5 @@ export class IframeComponent implements OnInit, OnDestroy, OnChanges {
 
   guid: string;
   width = 300;
-  height = 50px;
+  height = 50;
 }
