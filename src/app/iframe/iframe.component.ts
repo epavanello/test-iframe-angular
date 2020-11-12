@@ -9,6 +9,8 @@ import {
 } from "@angular/core";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 
+import * as postRobot from "post-robot";
+
 @Component({
   selector: "app-iframe",
   templateUrl: "./iframe.component.html",
@@ -19,18 +21,21 @@ export class IframeComponent implements OnInit, OnDestroy, OnChanges {
 
   private safeUrl: SafeResourceUrl;
   public showIframe: boolean = false;
-  private postRobot: any;
 
-  constructor(private sanitizer: DomSanitizer, private ngZone: NgZone) {}
+  constructor(private sanitizer: DomSanitizer, private ngZone: NgZone) {
+    /*this.ngZone.run(async () => {
+      console.log("Zone");
+      this.postRobot = await import("post-robot");
+    });*/
+  }
 
   ngOnInit(): void {
+    console.log("Init");
     // TODO check if is correct
-    this.ngZone.run(async () => {
-      this.postRobot = await import("post-robot");
-    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    console.log("Change");
     if (changes.url) {
       this.showIframe = false;
       this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
@@ -40,7 +45,7 @@ export class IframeComponent implements OnInit, OnDestroy, OnChanges {
 
   connectToEuresys() {
     console.log("Angular: Listen");
-    this.postRobot.once("euresys_connect", event => {
+    (postRobot as any).once("euresys_connect", event => {
       this.sendToEuresys = event.data.send;
       return {
         send: this.receiveFromEuresys
