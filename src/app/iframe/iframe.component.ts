@@ -21,10 +21,10 @@ import * as postRobot from "post-robot";
 })
 export class IframeComponent implements OnDestroy, OnChanges {
   @Input() url: string;
+  @Output() titleChange = new EventEmitter<string>();
 
   safeUrl: SafeResourceUrl;
   showIframe: boolean = false;
-  @Output() titleChange = new EventEmitter<string>();
   width = 300;
   height = 300;
 
