@@ -25,6 +25,8 @@ export class IframeComponent implements OnDestroy, OnChanges {
   safeUrl: SafeResourceUrl;
   showIframe: boolean = false;
   @Output() titleChange = new EventEmitter<string>();
+  width = 300;
+  height = 300;
 
   constructor(private sanitizer: DomSanitizer, private ngZone: NgZone) {}
 
@@ -93,8 +95,4 @@ export class IframeComponent implements OnDestroy, OnChanges {
   loaeded() {
     this.showIframe = true;
   }
-
-  guid: string;
-  width = 300;
-  height = 50;
 }

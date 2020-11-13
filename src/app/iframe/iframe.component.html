@@ -1,1 +1,2 @@
 <iframe *ngIf="safeUrl" [hidden]="!showIframe" [src]="safeUrl" [style.height.px]="height" (load)="loaeded()"></iframe>
+<p *ngIf="!safeUrl || !showIframe">loading...</p>
